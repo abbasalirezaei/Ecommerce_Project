@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 # Get the user model
 User = get_user_model()
@@ -46,7 +47,7 @@ class Item(models.Model) :
         return reverse("core:remove-from-cart", kwargs={
             "pk" : self.pk
         })   
-
+    
 # OrderItem will store product data that you want to order
 class OrderItem(models.Model) :
     user = models.ForeignKey(User,
@@ -54,7 +55,32 @@ class OrderItem(models.Model) :
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     ordered = models.BooleanField(default=False)
     quantity = models.IntegerField(default=1)
-
+    """
+    get_total_item_price, 
+    returns the total price value of each product item
+    """
+    def get_total_item_price(self):
+        return self.quantity * self.item.price
+    """
+    get_discount_item_price, returns the total price
+     value of each product item based on discounted prices
+    """
+    def get_discount_item_price(self):
+        return self.quantity * self.item.discount_price
+    """
+    get_amount_saved, returns the 
+    value of the price saved from existing discounts
+    """
+    def get_amount_saved(self):
+        return self.get_total_item_price() - self.get_discount_item_price()
+    """
+    get_final_price, returns which function is used as a price determinant 
+    (whether using the original price or discounted price)
+    """
+    def get_final_price(self):
+        if self.item.discount_price:
+            return self.get_discount_item_price()
+        return self.get_total_item_price()   
     def __str__(self):
         return f"{self.quantity} of {self.item.item_name}"
 #  Order will store order information
@@ -67,4 +93,12 @@ class Order(models.Model) :
 
     def __str__(self):
         return self.user.username
-    
+    """
+    get_total_price, returns the value 
+    of the total price of all ordered product items
+    """
+    def get_total_price(self):
+        total = 0
+        for order_item in self.items.all():
+            total += order_item.get_final_price()
+        return total
