@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-_ev5@&rf#18b#vn+o5pcig=-^^_q(7vrz=w8wnp!hx)m6ey!g$
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+STRIPE_KEY = '<your_api_key_here>'
 
 # Application definition
 
@@ -41,8 +41,9 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    
-    'core'
+    'django_countries',
+    'core',
+    'stripe'
 
 ]
 
